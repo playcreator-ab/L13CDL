@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Présentation Interactive</title>
+    <title>Les 13 Coups de Léon</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
@@ -31,6 +31,26 @@
             border-radius: 8px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.7);
             transition: opacity 0.3s ease-in-out;
+        }
+
+        /* Widget Chronomètre */
+        #timer-widget {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.9);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 40;
+            border-radius: 8px;
+        }
+
+        #timer-display {
+            font-size: 12rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            text-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
         }
 
         .controls-bar {
@@ -68,6 +88,15 @@
             box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
         }
 
+        .btn-timer {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .btn-timer:hover {
+            background: #8b5cf6;
+        }
+
         .audio-btn {
             background: #1e293b;
             border: 1px solid #475569;
@@ -98,6 +127,12 @@
 
     <!-- Zone d'affichage -->
     <div class="slide-container">
+        <!-- Widget Timer -->
+        <div id="timer-widget">
+            <div class="text-blue-400 text-xl font-bold mb-4 uppercase tracking-widest">Temps restant</div>
+            <div id="timer-display">5</div>
+        </div>
+        
         <img id="mainSlide" src="" alt="Slide" class="slide-image" onerror="this.src='https://via.placeholder.com/1280x720/1e293b/ffffff?text=Lien+Image+Invalide'">
     </div>
 
@@ -130,6 +165,13 @@
                 <button onclick="changeSlide('class', this)" class="btn-base btn-slide">Class</button>
                 <button onclick="changeSlide('fin', this)" class="btn-base btn-slide">Fin</button>
             </div>
+
+            <div class="divider"></div>
+
+            <!-- Chrono -->
+            <button onclick="startTimer()" class="btn-base btn-timer">
+                <span>⏱</span> Timer 5s
+            </button>
         </div>
     </div>
 
@@ -140,7 +182,6 @@
 
     <script>
         // --- CONFIGURATION DES LIENS ---
-        // Remplacez les textes entre guillemets par vos liens URL réels (ex: "https://site.com/image.png")
         const links = {
             images: {
                 titre: "titre.png",
@@ -159,6 +200,7 @@
         };
 
         let currentPlaying = null;
+        let timerInterval = null;
 
         // Initialisation
         window.onload = () => {
@@ -169,6 +211,7 @@
         };
 
         function changeSlide(key, element) {
+            stopTimer(); // Arrêter le timer si on change de slide
             const img = document.getElementById('mainSlide');
             img.style.opacity = 0;
             
@@ -179,6 +222,32 @@
 
             document.querySelectorAll('.btn-slide').forEach(btn => btn.classList.remove('active'));
             element.classList.add('active');
+        }
+
+        // --- Logique du Timer ---
+        function startTimer() {
+            stopTimer(); // Reset si déjà lancé
+            
+            const widget = document.getElementById('timer-widget');
+            const display = document.getElementById('timer-display');
+            let timeLeft = 5;
+
+            widget.style.display = 'flex';
+            display.innerText = timeLeft;
+
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                display.innerText = timeLeft;
+
+                if (timeLeft <= 0) {
+                    stopTimer();
+                }
+            }, 1000);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            document.getElementById('timer-widget').style.display = 'none';
         }
 
         function toggleAudio(id) {
