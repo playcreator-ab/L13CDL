@@ -33,11 +33,10 @@
             transition: opacity 0.3s ease-in-out;
         }
 
-        /* Widget Chronomètre */
         #timer-widget {
             position: absolute;
             inset: 0;
-            background: rgba(15, 23, 42, 0.9);
+            background: rgba(15, 23, 42, 0.95);
             display: none;
             flex-direction: column;
             align-items: center;
@@ -47,163 +46,110 @@
         }
 
         #timer-display {
-            font-size: 12rem;
+            font-size: 10rem;
             font-weight: 800;
             font-variant-numeric: tabular-nums;
             text-shadow: 0 0 30px rgba(59, 130, 246, 0.5);
         }
 
         .controls-bar {
-            background: rgba(15, 23, 42, 0.95);
+            background: rgba(15, 23, 42, 0.98);
             backdrop-filter: blur(8px);
-            padding: 0.5rem;
+            padding: 0.4rem;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
 
         .btn-base {
-            padding: 0.4rem 0.8rem;
+            padding: 0.35rem 0.7rem;
             border-radius: 6px;
             transition: all 0.2s;
-            font-weight: 600;
-            font-size: 0.85rem;
+            font-weight: 700;
+            font-size: 0.8rem;
             display: flex;
             align-items: center;
-            gap: 6px;
-            white-space: nowrap;
+            justify-content: center;
+            min-width: 35px;
         }
 
-        .btn-slide {
-            background: #334155;
-            color: #cbd5e1;
-        }
+        .btn-slide { background: #334155; color: #cbd5e1; }
+        .btn-slide:hover { background: #475569; color: white; }
+        .btn-slide.active { background: #3b82f6; color: white; }
 
-        .btn-slide:hover {
-            background: #475569;
-            color: white;
-        }
+        .btn-timer { background: #7c3aed; color: white; }
+        .btn-timer:hover { background: #8b5cf6; }
 
-        .btn-slide.active {
-            background: #3b82f6;
-            color: white;
-            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
-        }
+        .audio-btn { background: #1e293b; border: 1px solid #475569; color: #94a3b8; }
+        .audio-btn.playing { border-color: #10b981; color: #10b981; background: rgba(16, 185, 129, 0.1); }
 
-        .btn-timer {
-            background: #7c3aed;
-            color: white;
-        }
-
-        .btn-timer:hover {
-            background: #8b5cf6;
-        }
-
-        .audio-btn {
-            background: #1e293b;
-            border: 1px solid #475569;
-            color: #94a3b8;
-        }
-
-        .audio-btn.playing {
-            border-color: #10b981;
-            color: #10b981;
-            background: rgba(16, 185, 129, 0.1);
-            animation: pulse-border 2s infinite;
-        }
-
-        @keyframes pulse-border {
-            0% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.4); }
-            100% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
-        }
-
-        .divider {
-            width: 1px;
-            height: 24px;
-            background: rgba(255,255,255,0.1);
-            margin: 0 8px;
-        }
+        .divider { width: 1px; height: 20px; background: rgba(255,255,255,0.1); margin: 0 4px; }
+        
+        .timer-controls { display: flex; gap: 1rem; margin-top: 2rem; }
+        .btn-timer-ctrl { padding: 0.5rem 1.5rem; border-radius: 99px; font-weight: bold; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-    <!-- Zone d'affichage -->
     <div class="slide-container">
         <!-- Widget Timer -->
         <div id="timer-widget">
-            <div class="text-blue-400 text-xl font-bold mb-4 uppercase tracking-widest">Temps restant</div>
-            <div id="timer-display">5</div>
+            <div id="timer-label" class="text-blue-400 text-xl font-bold mb-4 uppercase tracking-widest">Chrono</div>
+            <div id="timer-display">0</div>
+            
+            <!-- Contrôles spécifiques pour le timer 1mn -->
+            <div id="extended-timer-controls" class="timer-controls" style="display: none;">
+                <button onclick="toggleTimerPause()" id="btn-pause" class="btn-timer-ctrl bg-orange-500 hover:bg-orange-600">Pause</button>
+                <button onclick="resetLongTimer()" class="btn-timer-ctrl bg-red-500 hover:bg-red-600">Reset</button>
+                <button onclick="stopTimer()" class="btn-timer-ctrl bg-gray-600 hover:bg-gray-700">Fermer</button>
+            </div>
         </div>
         
-        <img id="mainSlide" src="" alt="Slide" class="slide-image" onerror="this.src='https://via.placeholder.com/1280x720/1e293b/ffffff?text=Lien+Image+Invalide'">
+        <img id="mainSlide" src="" alt="Slide" class="slide-image" onerror="this.src='https://via.placeholder.com/1280x720/1e293b/ffffff?text=Image+Manquante'">
     </div>
 
-    <!-- Barre de contrôles compacte -->
     <div class="controls-bar">
-        <div class="max-w-full mx-auto flex items-center justify-center flex-wrap gap-2">
+        <div class="max-w-full mx-auto flex items-center justify-center flex-wrap gap-1.5">
             
             <!-- Musiques -->
-            <div class="flex items-center gap-2">
-                <button onclick="toggleAudio('lob')" id="btn-lob" class="btn-base audio-btn">
-                    <span id="icon-lob">▶</span> LOB
-                </button>
-                <button onclick="toggleAudio('med')" id="btn-med" class="btn-base audio-btn">
-                    <span id="icon-med">▶</span> MED
-                </button>
-                <button onclick="toggleAudio('adv')" id="btn-adv" class="btn-base audio-btn">
-                    <span id="icon-adv">▶</span> ADV
-                </button>
-            </div>
+            <button onclick="toggleAudio('lob')" id="btn-lob" class="btn-base audio-btn"><span id="icon-lob" class="mr-1">▶</span>LB</button>
+            <button onclick="toggleAudio('med')" id="btn-med" class="btn-base audio-btn"><span id="icon-med" class="mr-1">▶</span>MD</button>
+            <button onclick="toggleAudio('adv')" id="btn-adv" class="btn-base audio-btn"><span id="icon-adv" class="mr-1">▶</span>AV</button>
 
             <div class="divider"></div>
 
             <!-- Slides -->
-            <div class="flex items-center gap-2">
-                <button onclick="changeSlide('titre', this)" class="btn-base btn-slide active">Titre</button>
-                <button onclick="changeSlide('logo', this)" class="btn-base btn-slide">Logo</button>
-                <button onclick="changeSlide('regle', this)" class="btn-base btn-slide">Règle</button>
-                <button onclick="changeSlide('duel', this)" class="btn-base btn-slide">Duel</button>
-                <button onclick="changeSlide('quest', this)" class="btn-base btn-slide">Quest</button>
-                <button onclick="changeSlide('class', this)" class="btn-base btn-slide">Class</button>
-                <button onclick="changeSlide('fin', this)" class="btn-base btn-slide">Fin</button>
-            </div>
+            <button onclick="changeSlide('titre', this)" class="btn-base btn-slide active">T</button>
+            <button onclick="changeSlide('logo', this)" class="btn-base btn-slide">L</button>
+            <button onclick="changeSlide('regle', this)" class="btn-base btn-slide">R</button>
+            <button onclick="changeSlide('duel', this)" class="btn-base btn-slide">D</button>
+            <button onclick="changeSlide('quest', this)" class="btn-base btn-slide">Q</button>
+            <button onclick="changeSlide('class', this)" class="btn-base btn-slide">C</button>
+            <button onclick="changeSlide('fin', this)" class="btn-base btn-slide">F</button>
 
             <div class="divider"></div>
 
-            <!-- Chrono -->
-            <button onclick="startTimer()" class="btn-base btn-timer">
-                <span>⏱</span> Timer 5s
-            </button>
+            <!-- Chronos -->
+            <button onclick="startTimer(5)" class="btn-base btn-timer">5s</button>
+            <button onclick="startTimer(10)" class="btn-base btn-timer">10s</button>
+            <button onclick="startTimer(60)" class="btn-base btn-timer">1m</button>
         </div>
     </div>
 
-    <!-- Éléments Audio -->
     <audio id="audio-lob" loop></audio>
     <audio id="audio-med" loop></audio>
     <audio id="audio-adv" loop></audio>
 
     <script>
-        // --- CONFIGURATION DES LIENS ---
         const links = {
-            images: {
-                titre: "https://i.ibb.co/QvM3LTwH/1.png",
-                logo: "https://i.ibb.co/6cwck10w/2.png",
-                regle: "https://i.ibb.co/TMdn0X0b/3.png",
-                duel: "https://i.ibb.co/LDNf9rd2/4.png",
-                quest: "https://i.ibb.co/7tSkwYsd/5.png",
-                class: "https://i.ibb.co/nq9XHYcf/6.png",
-                fin: "https://i.ibb.co/6JRz40Th/7.png"
-            },
-            audio: {
-                lob: "https://github.com/playcreator-ab/L13CDL/raw/refs/heads/main/Lobby%20Music%20(Original%20Soundtrack).mp3",
-                med: "https://github.com/playcreator-ab/L13CDL/raw/refs/heads/main/The%2020%20Second%20Answer%20Medley.mp3",
-                adv: "https://github.com/playcreator-ab/L13CDL/raw/refs/heads/main/Lobby%20Music%20Adventure%20Edition.mp3"
-            }
+            images: { titre: "https://i.ibb.co/QvM3LTwH/1.png", logo: "https://i.ibb.co/6cwck10w/2.png", regle: "https://i.ibb.co/TMdn0X0b/3.png", duel: "https://i.ibb.co/LDNf9rd2/4.png", quest: "https://i.ibb.co/7tSkwYsd/5.png", class: "https://i.ibb.co/nq9XHYcf/6.png", fin: "https://i.ibb.co/6JRz40Th/7.png" },
+            audio: { lob: "https://github.com/playcreator-ab/L13CDL/raw/refs/heads/main/Lobby%20Music%20(Original%20Soundtrack).mp3", med: "https://github.com/playcreator-ab/L13CDL/raw/refs/heads/main/Lobby%20Music%20Adventure%20Edition.mp3", adv: "https://github.com/playcreator-ab/L13CDL/raw/refs/heads/main/The%2020%20Second%20Answer%20Medley.mp3" }
         };
 
         let currentPlaying = null;
         let timerInterval = null;
+        let timeLeft = 0;
+        let isPaused = false;
+        let isLongTimer = false;
 
-        // Initialisation
-        // proving that i saved in git!!
         window.onload = () => {
             document.getElementById('mainSlide').src = links.images.titre;
             document.getElementById('audio-lob').src = links.audio.lob;
@@ -212,38 +158,74 @@
         };
 
         function changeSlide(key, element) {
-            stopTimer(); // Arrêter le timer si on change de slide
+            stopTimer();
             const img = document.getElementById('mainSlide');
             img.style.opacity = 0;
-            
             setTimeout(() => {
                 img.src = links.images[key];
                 img.style.opacity = 1;
             }, 200);
-
             document.querySelectorAll('.btn-slide').forEach(btn => btn.classList.remove('active'));
             element.classList.add('active');
         }
 
         // --- Logique du Timer ---
-        function startTimer() {
-            stopTimer(); // Reset si déjà lancé
+        function startTimer(seconds) {
+            stopTimer();
+            timeLeft = seconds;
+            isPaused = false;
+            isLongTimer = seconds === 60;
             
             const widget = document.getElementById('timer-widget');
             const display = document.getElementById('timer-display');
-            let timeLeft = 5;
+            const extended = document.getElementById('extended-timer-controls');
+            const label = document.getElementById('timer-label');
 
             widget.style.display = 'flex';
-            display.innerText = timeLeft;
+            label.innerText = isLongTimer ? "Minuteur" : "Chrono";
+            display.innerText = formatTime(timeLeft);
+            
+            // Afficher les contrôles de pause/reset seulement pour 1mn
+            extended.style.display = isLongTimer ? 'flex' : 'none';
+            document.getElementById('btn-pause').innerText = "Pause";
 
+            runTimerLogic();
+        }
+
+        function runTimerLogic() {
             timerInterval = setInterval(() => {
-                timeLeft--;
-                display.innerText = timeLeft;
-
-                if (timeLeft <= 0) {
-                    stopTimer();
+                if (!isPaused) {
+                    timeLeft--;
+                    document.getElementById('timer-display').innerText = formatTime(timeLeft);
+                    if (timeLeft <= 0) {
+                        if (!isLongTimer) {
+                            setTimeout(stopTimer, 1000);
+                        } else {
+                            clearInterval(timerInterval);
+                        }
+                    }
                 }
             }, 1000);
+        }
+
+        function toggleTimerPause() {
+            isPaused = !isPaused;
+            document.getElementById('btn-pause').innerText = isPaused ? "Reprendre" : "Pause";
+        }
+
+        function resetLongTimer() {
+            timeLeft = 60;
+            isPaused = false;
+            document.getElementById('btn-display');
+            document.getElementById('timer-display').innerText = formatTime(timeLeft);
+            document.getElementById('btn-pause').innerText = "Pause";
+        }
+
+        function formatTime(s) {
+            if (s < 60) return s;
+            const m = Math.floor(s / 60);
+            const rs = s % 60;
+            return `${m}:${rs < 10 ? '0' : ''}${rs}`;
         }
 
         function stopTimer() {
@@ -265,9 +247,7 @@
                     document.getElementById('audio-' + currentPlaying).pause();
                     resetAudioUI(currentPlaying);
                 }
-
-                audio.play().catch(e => showError("Lien audio invalide : " + links.audio[id]));
-                
+                audio.play().catch(e => console.log("Audio link failed"));
                 btn.classList.add('playing');
                 icon.innerText = '⏸';
                 currentPlaying = id;
@@ -279,14 +259,6 @@
             const icon = document.getElementById('icon-' + id);
             if(btn) btn.classList.remove('playing');
             if(icon) icon.innerText = '▶';
-        }
-
-        function showError(msg) {
-            const div = document.createElement('div');
-            div.className = "fixed bottom-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded text-sm z-50";
-            div.innerText = msg;
-            document.body.appendChild(div);
-            setTimeout(() => div.remove(), 3000);
         }
     </script>
 </body>
