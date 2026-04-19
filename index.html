@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Présentation Interactive</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .slide-container {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+            position: relative;
+            background: radial-gradient(circle, #1e293b 0%, #0f172a 100%);
+        }
+
+        .slide-image {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .controls-bar {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(8px);
+            padding: 0.5rem;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-base {
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .btn-slide {
+            background: #334155;
+            color: #cbd5e1;
+        }
+
+        .btn-slide:hover {
+            background: #475569;
+            color: white;
+        }
+
+        .btn-slide.active {
+            background: #3b82f6;
+            color: white;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+        }
+
+        .audio-btn {
+            background: #1e293b;
+            border: 1px solid #475569;
+            color: #94a3b8;
+        }
+
+        .audio-btn.playing {
+            border-color: #10b981;
+            color: #10b981;
+            background: rgba(16, 185, 129, 0.1);
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0px rgba(16, 185, 129, 0.4); }
+            100% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+        }
+
+        .divider {
+            width: 1px;
+            height: 24px;
+            background: rgba(255,255,255,0.1);
+            margin: 0 8px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Zone d'affichage -->
+    <div class="slide-container">
+        <img id="mainSlide" src="" alt="Slide" class="slide-image" onerror="this.src='https://via.placeholder.com/1280x720/1e293b/ffffff?text=Lien+Image+Invalide'">
+    </div>
+
+    <!-- Barre de contrôles compacte -->
+    <div class="controls-bar">
+        <div class="max-w-full mx-auto flex items-center justify-center flex-wrap gap-2">
+            
+            <!-- Musiques -->
+            <div class="flex items-center gap-2">
+                <button onclick="toggleAudio('lob')" id="btn-lob" class="btn-base audio-btn">
+                    <span id="icon-lob">▶</span> LOB
+                </button>
+                <button onclick="toggleAudio('med')" id="btn-med" class="btn-base audio-btn">
+                    <span id="icon-med">▶</span> MED
+                </button>
+                <button onclick="toggleAudio('adv')" id="btn-adv" class="btn-base audio-btn">
+                    <span id="icon-adv">▶</span> ADV
+                </button>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Slides -->
+            <div class="flex items-center gap-2">
+                <button onclick="changeSlide('titre', this)" class="btn-base btn-slide active">Titre</button>
+                <button onclick="changeSlide('logo', this)" class="btn-base btn-slide">Logo</button>
+                <button onclick="changeSlide('regle', this)" class="btn-base btn-slide">Règle</button>
+                <button onclick="changeSlide('duel', this)" class="btn-base btn-slide">Duel</button>
+                <button onclick="changeSlide('quest', this)" class="btn-base btn-slide">Quest</button>
+                <button onclick="changeSlide('class', this)" class="btn-base btn-slide">Class</button>
+                <button onclick="changeSlide('fin', this)" class="btn-base btn-slide">Fin</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Éléments Audio -->
+    <audio id="audio-lob" loop></audio>
+    <audio id="audio-med" loop></audio>
+    <audio id="audio-adv" loop></audio>
+
+    <script>
+        // --- CONFIGURATION DES LIENS ---
+        // Remplacez les textes entre guillemets par vos liens URL réels (ex: "https://site.com/image.png")
+        const links = {
+            images: {
+                titre: "titre.png",
+                logo: "logo.png",
+                regle: "regle.png",
+                duel: "duel.png",
+                quest: "quest.png",
+                class: "class.png",
+                fin: "fin.png"
+            },
+            audio: {
+                lob: "lob.mp3",
+                med: "med.mp3",
+                adv: "adv.mp3"
+            }
+        };
+
+        let currentPlaying = null;
+
+        // Initialisation
+        window.onload = () => {
+            document.getElementById('mainSlide').src = links.images.titre;
+            document.getElementById('audio-lob').src = links.audio.lob;
+            document.getElementById('audio-med').src = links.audio.med;
+            document.getElementById('audio-adv').src = links.audio.adv;
+        };
+
+        function changeSlide(key, element) {
+            const img = document.getElementById('mainSlide');
+            img.style.opacity = 0;
+            
+            setTimeout(() => {
+                img.src = links.images[key];
+                img.style.opacity = 1;
+            }, 200);
+
+            document.querySelectorAll('.btn-slide').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+
+        function toggleAudio(id) {
+            const audio = document.getElementById('audio-' + id);
+            const btn = document.getElementById('btn-' + id);
+            const icon = document.getElementById('icon-' + id);
+
+            if (currentPlaying === id) {
+                audio.pause();
+                resetAudioUI(id);
+                currentPlaying = null;
+            } else {
+                if (currentPlaying) {
+                    document.getElementById('audio-' + currentPlaying).pause();
+                    resetAudioUI(currentPlaying);
+                }
+
+                audio.play().catch(e => showError("Lien audio invalide : " + links.audio[id]));
+                
+                btn.classList.add('playing');
+                icon.innerText = '⏸';
+                currentPlaying = id;
+            }
+        }
+
+        function resetAudioUI(id) {
+            const btn = document.getElementById('btn-' + id);
+            const icon = document.getElementById('icon-' + id);
+            if(btn) btn.classList.remove('playing');
+            if(icon) icon.innerText = '▶';
+        }
+
+        function showError(msg) {
+            const div = document.createElement('div');
+            div.className = "fixed bottom-20 left-1/2 -translate-x-1/2 bg-red-600 text-white px-4 py-2 rounded text-sm z-50";
+            div.innerText = msg;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
